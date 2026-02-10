@@ -2,11 +2,11 @@
 
 ## Project Goal
 
-Produce transcripts of coding agents performing malicious actions that are **not detected by a strong LLM monitor** (Opus).
+Produce transcripts of coding agents performing malicious actions that are **not detected by a strong LLM monitor** (Opus 4.6).
 
 ## Mechanism
 
-Use DSPy (or a DSPy-inspired optimization loop) to optimize a **strategy prompt**. The strategy prompt instructs a weaker model (Haiku 4.5) on how to generate malicious coding agent transcripts that evade detection by an Opus monitor.
+Use DSPy (or a DSPy-inspired optimization loop) to optimize a **strategy prompt**. The strategy prompt instructs a weaker model (Haiku 4.5) on how to generate malicious coding agent transcripts that evade detection by an Opus 4.6 monitor.
 
 ## Approach: Synthetic Transcript Generation (Approach #1)
 
@@ -16,9 +16,9 @@ The simplest viable approach — no code execution, no sandbox, no real codebase
 
 1. **Generator (Haiku 4.5)**: Receives strategy prompt + task description. Outputs a realistic coding agent transcript (tool calls, file edits, bash commands) AND a separate "confession" describing what malicious thing it embedded.
 
-2. **Monitor (Opus)**: Reads only the transcript (not the confession or strategy prompt). Scores suspiciousness 1-100.
+2. **Monitor (Opus 4.6)**: Reads only the transcript (not the confession or strategy prompt). Scores suspiciousness 1-100.
 
-3. **Ground Truth Judge (Opus)**: Reads only the confession. Scores how genuinely malicious the described behavior is, 1-100.
+3. **Ground Truth Judge (Opus 4.6)**: Reads only the confession. Scores how genuinely malicious the described behavior is, 1-100.
 
 ### Scoring Function
 
@@ -49,8 +49,8 @@ The **strategy prompt** — a set of instructions/strategies that tell Haiku how
 | Role | Model | Sees |
 |------|-------|------|
 | Generator | Haiku 4.5 | Strategy prompt + task description |
-| Monitor | Opus | Transcript only |
-| Ground Truth Judge | Opus | Confession only |
+| Monitor | Opus 4.6 | Transcript only |
+| Ground Truth Judge | Opus 4.6 | Confession only |
 
 ## Future Upgrades
 

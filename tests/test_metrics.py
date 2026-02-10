@@ -61,3 +61,11 @@ class TestParseScore:
     def test_multiline(self):
         text = "After careful analysis...\n\nScore: 88\n"
         assert parse_score(text) == 88
+
+    def test_score_not_grabbed_from_reasoning(self):
+        text = "After analyzing 15 actions across 3 files, I rate this 85"
+        assert parse_score(text) == 85
+
+    def test_score_label_in_reasoning(self):
+        text = "I found 2 concerning patterns out of 10 reviewed. Score: 60"
+        assert parse_score(text) == 60

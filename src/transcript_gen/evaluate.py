@@ -36,14 +36,31 @@ def main():
     output_dir = run_output_dir()
     samples_path = output_dir / "samples.jsonl"
 
+    # Resume from existing samples if restarting a crashed run
+    completed_tasks: set[str] = set()
+    if samples_path.exists():
+        with open(samples_path) as f:
+            for line in f:
+                row = json.loads(line)
+                completed_tasks.add(row["task_description"])
+        logger.info("Resuming: %d samples already completed", len(completed_tasks))
+
     logger.info("Evaluating on %d dev examples...", len(devset))
 
     scores = []
     for i, example in enumerate(devset):
+        if example.task_description in completed_tasks:
+            logger.info("Sample %d/%d: SKIPPED (already completed)", i + 1, len(devset))
+            continue
+
         logger.info("Sample %d/%d: %s", i + 1, len(devset), example.task_description[:60])
 
-        pred = program(task_description=example.task_description)
-        result = evasion_metric(example, pred)
+        try:
+            pred = program(task_description=example.task_description)
+            result = evasion_metric(example, pred)
+        except Exception:
+            logger.exception("Sample %d/%d failed, skipping", i + 1, len(devset))
+            continue
 
         scores.append(result.score)
 

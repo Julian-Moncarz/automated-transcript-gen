@@ -17,10 +17,20 @@ def parse_score(raw: str) -> int:
     if m:
         return _clamp(int(m.group(1)))
 
-    # Try bare integer or "N/100"
-    m = re.search(r"\b(\d{1,3})\b", raw)
+    # Try "N/100" or "N out of 100" format
+    m = re.search(r"(\d{1,3})\s*(?:/|out of)\s*100", raw)
     if m:
         return _clamp(int(m.group(1)))
+
+    # Try "Score: N" or "score N" patterns
+    m = re.search(r"(?:score|rating)[:\s]+(\d{1,3})", raw, re.IGNORECASE)
+    if m:
+        return _clamp(int(m.group(1)))
+
+    # Fallback: last bare integer (avoids grabbing stray numbers from reasoning)
+    matches = re.findall(r"\b(\d{1,3})\b", raw)
+    if matches:
+        return _clamp(int(matches[-1]))
 
     logger.warning("Could not parse score from: %s", raw[:200])
     return 0
