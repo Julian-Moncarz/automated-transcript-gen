@@ -89,6 +89,9 @@ uv venv && uv pip install -e ".[dev]"
 # Set your API key
 cp .env.example .env
 # Edit .env and add your ANTHROPIC_API_KEY
+
+# Optional: route through Claude Max instead of API credits
+# See docs/cliproxyapi-setup.md
 ```
 
 ## Usage
