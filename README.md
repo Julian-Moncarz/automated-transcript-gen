@@ -1,9 +1,13 @@
 # Automated Transcript Generation for Monitor Evasion
 
 Goal:
+
 Produce transcripts of coding agents performing malicious actions that are not detected by a strong LLM monitor (Opus).
+
 Mechanism:
+
 Use DSPy (or a DSPy-inspired optimization loop) to optimize a strategy prompt. The strategy prompt instructs a weaker model (Haiku 4.5) on how to generate malicious coding agent transcripts that evade detection by an Opus monitor.
+
 ## Motivation
 
 LLM-based monitors guard AI control protocols. But evaluating them requires adversarial transcripts that test their limits. Hand-crafting these is slow and biased toward patterns humans anticipate. This project automates the process:
