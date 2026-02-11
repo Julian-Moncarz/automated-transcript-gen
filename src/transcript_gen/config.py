@@ -24,7 +24,7 @@ MONITOR_LM = dspy.LM(
 )
 
 JUDGE_LM = dspy.LM(
-    "openai/claude-opus-4-6",
+    "openai/claude-haiku-4-5-20251001",
     max_tokens=2048,
     temperature=0.0,
     api_base=PROXY_BASE,
@@ -32,7 +32,7 @@ JUDGE_LM = dspy.LM(
 )
 
 REFLECTION_LM = dspy.LM(
-    "openai/claude-opus-4-6",
+    "openai/claude-haiku-4-5-20251001",
     max_tokens=4096,
     temperature=0.7,
     api_base=PROXY_BASE,

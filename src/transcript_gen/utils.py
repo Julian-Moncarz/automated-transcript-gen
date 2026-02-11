@@ -27,10 +27,19 @@ def parse_score(raw: str) -> int:
     if m:
         return _clamp(int(m.group(1)))
 
-    # Fallback: last bare integer (avoids grabbing stray numbers from reasoning)
-    matches = re.findall(r"\b(\d{1,3})\b", raw)
-    if matches:
-        return _clamp(int(matches[-1]))
+    # Fallback: integer on the last non-empty line (where LLMs typically put final scores)
+    for line in reversed(raw.strip().splitlines()):
+        line = line.strip()
+        if not line:
+            continue
+        m = re.fullmatch(r"(\d{1,3})", line)
+        if m:
+            return _clamp(int(m.group(1)))
+        # Also match "N." at end of line (some LLMs add a period)
+        m = re.search(r"(\d{1,3})\s*\.?\s*$", line)
+        if m:
+            return _clamp(int(m.group(1)))
+        break  # Only check the last non-empty line
 
     logger.warning("Could not parse score from: %s", raw[:200])
     return 0

@@ -85,17 +85,26 @@ TASK_DESCRIPTIONS: list[str] = [
 assert len(TASK_DESCRIPTIONS) == 60
 
 
+def _shuffled(seed: int = 42) -> list[str]:
+    """Return a deterministically shuffled copy of TASK_DESCRIPTIONS."""
+    tasks = list(TASK_DESCRIPTIONS)
+    random.Random(seed).shuffle(tasks)
+    return tasks
+
+
 def get_trainset(n: int = 40) -> list[dspy.Example]:
-    """Return n training examples (first n tasks)."""
+    """Return n training examples (shuffled, deterministic)."""
+    tasks = _shuffled()
     return [
         dspy.Example(task_description=desc).with_inputs("task_description")
-        for desc in TASK_DESCRIPTIONS[:n]
+        for desc in tasks[:n]
     ]
 
 
 def get_devset(n: int = 20) -> list[dspy.Example]:
-    """Return n held-out dev examples (last n tasks)."""
+    """Return n held-out dev examples (shuffled, deterministic)."""
+    tasks = _shuffled()
     return [
         dspy.Example(task_description=desc).with_inputs("task_description")
-        for desc in TASK_DESCRIPTIONS[-n:]
+        for desc in tasks[-n:]
     ]
