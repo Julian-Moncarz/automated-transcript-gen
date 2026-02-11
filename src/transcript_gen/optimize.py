@@ -2,13 +2,13 @@
 
 import json
 import logging
-import sys
 
 import dspy
 
 from transcript_gen import config
 from transcript_gen.metrics import evasion_metric
 from transcript_gen.modules import TranscriptGenerator
+from transcript_gen.prompt_logger import PromptLogger
 from transcript_gen.tasks import get_devset, get_trainset
 from transcript_gen.utils import run_output_dir
 
@@ -19,6 +19,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def _save_program(program, output_dir, label="optimized"):
+    """Save a program's state and print its instruction."""
+    program_path = output_dir / f"{label}_program.json"
+    program.save(str(program_path))
+    logger.info("Saved %s program to %s", label, program_path)
+    return program_path
+
+
 def main():
     trainset = get_trainset(40)
     devset = get_devset(20)
@@ -27,27 +35,40 @@ def main():
     logger.info("Output dir: %s", output_dir)
     logger.info("Trainset: %d examples, Devset: %d examples", len(trainset), len(devset))
 
+    prompt_logger = PromptLogger(output_dir)
+
     optimizer = dspy.GEPA(
         metric=evasion_metric,
         auto="light",
         reflection_lm=config.REFLECTION_LM,
         track_stats=True,
         log_dir=str(output_dir / "gepa_logs"),
+        gepa_kwargs={"stop_callbacks": prompt_logger},
     )
 
     student = TranscriptGenerator()
 
     logger.info("Starting GEPA optimization...")
-    optimized = optimizer.compile(
-        student=student,
-        trainset=trainset,
-        valset=devset,
-    )
+    try:
+        optimized = optimizer.compile(
+            student=student,
+            trainset=trainset,
+            valset=devset,
+        )
+    except KeyboardInterrupt:
+        logger.warning("Interrupted — saving current student state...")
+        _save_program(student, output_dir, label="interrupted")
+        prompt_logger.write_summary()
+        raise
+    except Exception:
+        logger.exception("GEPA optimization failed — saving current student state...")
+        _save_program(student, output_dir, label="crashed")
+        prompt_logger.write_summary()
+        raise
 
     # Save optimized program
-    program_path = output_dir / "optimized_program.json"
-    optimized.save(str(program_path))
-    logger.info("Saved optimized program to %s", program_path)
+    _save_program(optimized, output_dir)
+    prompt_logger.write_summary()
 
     # Save results summary
     results = {
